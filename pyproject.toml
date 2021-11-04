@@ -1,0 +1,7 @@
+[code-quality]
+  linters = ["pylint", "mypy", "black", "isort", "bandit"]
+[tool.isort]
+profile = "black"
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+python_files = "test_*.py"
