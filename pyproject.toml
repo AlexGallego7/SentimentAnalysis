@@ -1,5 +1,5 @@
 [code-quality]
-  linters = ["pylint", "black", "isort"]
+linters = ["pylint", "black", "isort"]
 [tool.isort]
 profile = "black"
 [tool.pytest.ini_options]
@@ -10,3 +10,5 @@ report = "tests-report.xml"
 [tool.mllint.testing.coverage]
 report = "coverage.xml"
 targets = { line = 80.0 } 
+[tool.mllint.rules]
+disabled = ["version-control/data/dvc-has-remote", "version-control/data/dvc-has-files", "code-quality/bandit/no-issues"]

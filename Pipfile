@@ -66,6 +66,9 @@ wrapt = "==1.12.1"
 
 [dev-packages]
 pylint = "*"
+keras = "*"
+tensorflow = "*"
+sklearn = "*"
 
 [requires]
 python_version = "3.8"

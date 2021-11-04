@@ -41,7 +41,7 @@ df.target = df.target.apply(lambda x: decode_target(x))
 stop_words = stopwords.words("english")
 stemmer = SnowballStemmer("english")
 
-CLEANSE_RE = "@\S+|https?:\S+|http?:\S|[^A-Za-z0-9]+"
+CLEANSE_RE = "@\r+|https?:\r+|http?:\r|[^A-Za-z0-9]+"
 
 
 def preprocess_text(text: str, stem: bool = False) -> str:

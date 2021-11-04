@@ -1,0 +1,1 @@
+<?xml version="1.0" encoding="utf-8"?><testsuites><testsuite name="pytest" errors="0" failures="0" skipped="0" tests="2" time="20.853" timestamp="2021-11-04T20:08:17.424513" hostname="alex-msi"><testcase classname="tests.test_negative" name="test_is_negative" time="0.111" /><testcase classname="tests.test_positive" name="test_is_positive" time="0.109" /></testsuite></testsuites>
