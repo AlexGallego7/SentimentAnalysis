@@ -13,7 +13,7 @@ AUTH = tweepy.OAuthHandler(CONSUMER_KEY, CONSUMER_SECRET)
 AUTH.set_access_token(ACCESS_TOKEN, ACCESS_TOKEN_SECRET)
 API = tweepy.API(AUTH, wait_on_rate_limit=True)
 
-with csv.writer(open("../data/tweets.csv", "w")) as writer:
+with csv.writer(open("data/tweets.csv", "w")) as writer:
 
     tweets = tweepy.Cursor(
         API.search, q="#EURO2021", lang="en", since="2017-04-03"

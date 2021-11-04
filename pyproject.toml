@@ -1,7 +1,12 @@
 [code-quality]
-  linters = ["pylint", "mypy", "black", "isort", "bandit"]
+  linters = ["pylint", "black", "isort"]
 [tool.isort]
 profile = "black"
 [tool.pytest.ini_options]
 testpaths = ["tests"]
 python_files = "test_*.py"
+[tool.mllint.testing]
+report = "tests-report.xml"
+[tool.mllint.testing.coverage]
+report = "coverage.xml"
+targets = { line = 80.0 } 

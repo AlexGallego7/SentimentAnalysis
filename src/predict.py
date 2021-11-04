@@ -1,6 +1,8 @@
+""" Predicition Module"""
+
 import pickle
 import re
-from math import pi
+import typing
 
 import pandas as pd
 from keras.models import load_model
@@ -8,28 +10,25 @@ from keras.preprocessing.sequence import pad_sequences
 from matplotlib import pyplot as plt
 from nltk.stem import SnowballStemmer
 
-# Load model and CSV
-
-model = load_model("../model.h5")
-tokenizer = pickle.load(open("../data/features/tokenizer.pkl", "rb"))
+model = load_model("model.h5")
 
 df = pd.read_csv(
-    "../data/tweets.csv",
+    "data/tweets.csv",
     encoding="ISO-8859-1",
     names=["user", "text", "loc"],
     header=None,
 )
 df = df[["text"]]
 
-## Text preprocessing
-
 stemmer = SnowballStemmer("english")
 
-cleanse_re = "@\S+|https?:\S+|http?:\S|[^A-Za-z0-9]+"
+CLEANSE_RE = "@\S+|https?:\S+|http?:\S|[^A-Za-z0-9]+"
 
 
-def preprocess_text(text, stem=True):
-    text = re.sub(cleanse_re, " ", str(text).lower()).strip()
+def preprocess_text(text: str, stem: bool = True) -> str:
+    """Remove URLs and stopwords"""
+
+    text = re.sub(CLEANSE_RE, " ", str(text).lower()).strip()
     tokens = []
     for token in text.split():
         if stem:
@@ -43,10 +42,9 @@ def preprocess_text(text, stem=True):
 df.text = df.text.apply(lambda x: preprocess_text(x))
 
 
-# Give user friendly output of prediction
+def decode_prediction(pred: float) -> str:
+    """Decode prediction number to label"""
 
-
-def decode_prediction(pred):
     label = "NEUTRAL"
     if pred <= 0.45:
         label = "NEGATIVE"
@@ -55,20 +53,23 @@ def decode_prediction(pred):
     return label
 
 
-def predict(text):
-    X_text = pad_sequences(tokenizer.texts_to_sequences([text]), maxlen=30)
-    score = model.predict([X_text])[0]
+tokenizer = pickle.load(open("data/features/tokenizer.pkl", "rb"))
+
+
+def predict(text: str) -> typing.Dict:
+    """Predict the text with model"""
+
+    x_text = pad_sequences(tokenizer.texts_to_sequences([text]), maxlen=30)
+    score = model.predict([x_text])[0]
     label = decode_prediction(score)
 
     return {"message": text, "label": label, "score": float(score)}
 
 
-# Create piechart
-
 piechart = {"POSITIVE": 0, "NEUTRAL": 0, "NEGATIVE": 0}
 
-for text in df.text.to_list():
-    res = predict(text)
+for tweet in df.text.to_list():
+    res = predict(tweet)
     piechart[res["label"]] += 1
 
 fig = plt.figure(figsize=(10, 7))
