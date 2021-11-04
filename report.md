@@ -1,12 +1,12 @@
 # ML Project Report
 **Project** | **Details**
 --------|--------
-Date    | Thu, 04 Nov 2021 20:05:55 +0100 
+Date    | Thu, 04 Nov 2021 20:33:31 +0100 
 Path    | `/home/alex/Desktop/SentimentAnalysis`
 Config  | `pyproject.toml`
 Default | No
 Git: Remote URL | `https://github.com/AlexGallego7/SentimentAnalysis.git`
-Git: Commit     | `e4c2965f2a5595af3e8df4011d635c9acf75e60b`
+Git: Commit     | `844600b7f6ea6382460dcf39f6b92100b3a44ca4`
 Git: Branch     | `master`
 Git: Dirty Workspace?  | Yes
 Number of Python files | 5
@@ -45,69 +45,92 @@ Passed | Score | Weight | Rule | Slug
  | _Total_ | | | 
 ✅ | **100.0**% | | Dependency Management | `dependency-management`
 
-### Code Quality (`code-quality`) — **56.7**%
+### Code Quality (`code-quality`) — **59.7**%
 
 Passed | Score | Weight | Rule | Slug
 :-----:|------:|-------:|------|-----
-❌ | 40.0% | 1 | Project should use code quality linters | `code-quality/use-linters`
+✅ | 100.0% | 1 | Project should use code quality linters | `code-quality/use-linters`
 ✅ | 100.0% | 1 | All code quality linters should be installed in the current environment | `code-quality/linters-installed`
+❌ | 18.0% | 1 | Pylint reports no issues with this project | `code-quality/pylint/no-issues`
 ❌ | 0.0% | 1 | Pylint is configured for this project | `code-quality/pylint/is-configured`
 ❌ | 0.0% | 1 | Mypy reports no issues with this project | `code-quality/mypy/no-issues`
 ✅ | 100.0% | 1 | Black reports no issues with this project | `code-quality/black/no-issues`
 ✅ | 100.0% | 1 | isort reports no issues with this project | `code-quality/isort/no-issues`
 ✅ | 100.0% | 0 | isort is properly configured | `code-quality/isort/is-configured`
  | _Total_ | | | 
-❌ | **56.7**% | | Code Quality | `code-quality`
+❌ | **59.7**% | | Code Quality | `code-quality`
 
-#### Details — Project should use code quality linters — ❌
+#### Details — Project should use code quality linters — ✅
 
-Linters detected:
+Hooray, all linters detected:
 
-- isort
 - Pylint
-
-
-However, these linters were **missing** from your project:
-
 - Mypy
 - Black
+- isort
 - Bandit
 
 
-We recommend that you start using these linters in your project to help you measure and maintain the quality of your code.
+#### Details — Pylint reports no issues with this project — ❌
 
-This rule will be satisfied, iff for each of these linters:
-- **Either** there is a configuration file for this linter in the project
-- **Or** the linter is a dependency of the project
+Pylint reported **15** issues with your project:
 
-Specifically, we recommend adding each linter to the development dependencies of your dependency manager,
-e.g. using `poetry add --dev mypy` or `pipenv install --dev mypy`
+- `src/collect.py:16,16` - _(W1514)_ Using open without explicitly specifying an encoding
+- `src/collect.py:19,8` - _(E1101)_ Instance of 'API' has no 'search' member
+- `src/model.py:38,28` - _(W0108)_ Lambda may not be necessary
+- `src/model.py:61,24` - _(W0108)_ Lambda may not be necessary
+- `src/model.py:149,23` - _(R1732)_ Consider using 'with' for resource-allocating operations
+- `src/model.py:150,21` - _(R1732)_ Consider using 'with' for resource-allocating operations
+- `src/predict.py:41,24` - _(W0108)_ Lambda may not be necessary
+- `src/predict.py:55,24` - _(R1732)_ Consider using 'with' for resource-allocating operations
+- `tests/test_negative.py:1,0` - _(C0114)_ Missing module docstring
+- `tests/test_negative.py:5,0` - _(C0413)_ Import "from predict import predict" should be placed at the top of the module
+- `tests/test_negative.py:8,0` - _(C0116)_ Missing function or method docstring
+- `tests/test_positive.py:1,0` - _(C0114)_ Missing module docstring
+- `tests/test_positive.py:5,0` - _(C0413)_ Import "from predict import predict" should be placed at the top of the module
+- `tests/test_positive.py:8,0` - _(C0116)_ Missing function or method docstring
+- `tests/test_positive.py:1,0` - _(R0801)_ Similar lines in 2 files
+	```python
+	==model:[52:62]
+	==predict:[32:43]
+	        if stem:
+	            tokens.append(stemmer.stem(token))
+	        else:
+	            tokens.append(token)
+	
+	    return " ".join(tokens)
+	
+	
+	df.text = df.text.apply(lambda x: preprocess_text(x))
+	
+	
+	```
 
 
 #### Details — Mypy reports no issues with this project — ❌
 
 Mypy reported **28** issues with your project:
 
-- `src/predict.py:7,1` - Error: Skipping analyzing "pandas": found module but no type hints or library stubs  [import]
-- `src/predict.py:8,1` - Error: Skipping analyzing "keras.models": found module but no type hints or library stubs  [import]
-- `src/predict.py:9,1` - Error: Skipping analyzing "keras.preprocessing.sequence": found module but no type hints or library stubs  [import]
-- `src/predict.py:10,1` - Error: Skipping analyzing "matplotlib": found module but no type hints or library stubs  [import]
-- `src/predict.py:11,1` - Error: Skipping analyzing "nltk.stem": found module but no type hints or library stubs  [import]
-- `src/predict.py` - 59: error: Missing type parameters for generic type "typing.Dict"  [type-arg]
-- `src/model.py:6,1` - Error: Skipping analyzing "nltk": found module but no type hints or library stubs  [import]
-- `src/model.py:7,1` - Error: Skipping analyzing "numpy": found module but no type hints or library stubs  [import]
-- `src/model.py:8,1` - Error: Skipping analyzing "pandas": found module but no type hints or library stubs  [import]
-- `src/model.py:9,1` - Error: Skipping analyzing "gensim.models": found module but no type hints or library stubs  [import]
-- `src/model.py:10,1` - Error: Skipping analyzing "keras.callbacks": found module but no type hints or library stubs  [import]
-- `src/model.py:11,1` - Error: Skipping analyzing "keras.layers": found module but no type hints or library stubs  [import]
-- `src/model.py:12,1` - Error: Skipping analyzing "keras.models": found module but no type hints or library stubs  [import]
-- `src/model.py:13,1` - Error: Skipping analyzing "keras.preprocessing.sequence": found module but no type hints or library stubs  [import]
-- `src/model.py:14,1` - Error: Skipping analyzing "keras.preprocessing.text": found module but no type hints or library stubs  [import]
-- `src/model.py:15,1` - Error: Skipping analyzing "nltk.corpus": found module but no type hints or library stubs  [import]
-- `src/model.py:16,1` - Error: Skipping analyzing "nltk.stem": found module but no type hints or library stubs  [import]
-- `src/model.py:17,1` - Error: Skipping analyzing "sklearn.model_selection": found module but no type hints or library stubs  [import]
-- `src/model.py:18,1` - Error: Skipping analyzing "sklearn.preprocessing": found module but no type hints or library stubs  [import]
-- `src/model.py` - 135: error: Missing type parameters for generic type "typing.Dict"  [type-arg]
+- `src/predict.py:6,1` - Error: Skipping analyzing "pandas": found module but no type hints or library stubs  [import]
+- `src/predict.py:7,1` - Error: Skipping analyzing "keras.models": found module but no type hints or library stubs  [import]
+- `src/predict.py:8,1` - Error: Skipping analyzing "keras.preprocessing.sequence": found module but no type hints or library stubs  [import]
+- `src/predict.py:9,1` - Error: Skipping analyzing "matplotlib": found module but no type hints or library stubs  [import]
+- `src/predict.py:10,1` - Error: Skipping analyzing "nltk.stem": found module but no type hints or library stubs  [import]
+- `src/predict.py:58,27` - Error: Implicit generic "Any". Use "typing.Dict" and specify generic parameters  [type-arg]
+- `src/model.py:5,1` - Error: Skipping analyzing "nltk": found module but no type hints or library stubs  [import]
+- `src/model.py:6,1` - Error: Skipping analyzing "numpy": found module but no type hints or library stubs  [import]
+- `src/model.py:7,1` - Error: Skipping analyzing "pandas": found module but no type hints or library stubs  [import]
+- `src/model.py:8,1` - Error: Skipping analyzing "gensim.models": found module but no type hints or library stubs  [import]
+- `src/model.py:9,1` - Error: Skipping analyzing "keras.callbacks": found module but no type hints or library stubs  [import]
+- `src/model.py:10,1` - Error: Skipping analyzing "keras.layers": found module but no type hints or library stubs  [import]
+- `src/model.py:11,1` - Error: Skipping analyzing "keras.models": found module but no type hints or library stubs  [import]
+- `src/model.py:12,1` - Error: Skipping analyzing "keras.preprocessing.sequence": found module but no type hints or library stubs  [import]
+- `src/model.py:13,1` - Error: Skipping analyzing "keras.preprocessing.text": found module but no type hints or library stubs  [import]
+- `src/model.py:14,1` - Error: Skipping analyzing "nltk.corpus": found module but no type hints or library stubs  [import]
+- `src/model.py:15,1` - Error: Skipping analyzing "nltk.stem": found module but no type hints or library stubs  [import]
+- `src/model.py:16,1` - Error: Skipping analyzing "sklearn.model_selection": found module but no type hints or library stubs  [import]
+- `src/model.py:17,1` - Error: Skipping analyzing "sklearn.preprocessing": found module but no type hints or library stubs  [import]
+- `src/model.py:134,27` - Error: Implicit generic "Any". Use "typing.Dict" and specify generic parameters  [type-arg]
 - `src/collect.py:5,1` - Error: Skipping analyzing "tweepy": found module but no type hints or library stubs  [import]
 - `src/collect.py:5,1` - Note: See https://mypy.readthedocs.io/en/stable/running_mypy.html#missing-imports
 - `src/collect.py:16,6` - Error: "_writer" has no attribute "__enter__"  [attr-defined]
@@ -160,35 +183,4 @@ Passed | Score | Weight | Rule | Slug
 ❌ | 0.0% | 1 | Project uses Continuous Integration (CI) | `ci/use`
  | _Total_ | | | 
 ❌ | **0.0**% | | Continuous Integration | `ci`
-
-## Errors
-
-1 error(s) occurred while analysing your project:
-- ❌ **Code Quality** - 1 error occurred:
-	* Pylint failed to run: error parsing Pylint output 'Traceback (most recent call last):
-  File "/home/alex/.local/share/virtualenvs/SentimentAnalysis-CHIzAvV2/bin/pylint", line 8, in <module>
-    sys.exit(run_pylint())
-  File "/home/alex/.local/share/virtualenvs/SentimentAnalysis-CHIzAvV2/lib/python3.8/site-packages/pylint/__init__.py", line 21, in run_pylint
-    from pylint.lint import Run as PylintRun
-  File "/home/alex/.local/share/virtualenvs/SentimentAnalysis-CHIzAvV2/lib/python3.8/site-packages/pylint/lint/__init__.py", line 76, in <module>
-    from pylint.lint.parallel import check_parallel
-  File "/home/alex/.local/share/virtualenvs/SentimentAnalysis-CHIzAvV2/lib/python3.8/site-packages/pylint/lint/parallel.py", line 8, in <module>
-    from pylint import reporters
-  File "/home/alex/.local/share/virtualenvs/SentimentAnalysis-CHIzAvV2/lib/python3.8/site-packages/pylint/reporters/__init__.py", line 26, in <module>
-    from pylint import utils
-  File "/home/alex/.local/share/virtualenvs/SentimentAnalysis-CHIzAvV2/lib/python3.8/site-packages/pylint/utils/__init__.py", line 46, in <module>
-    from pylint.utils.ast_walker import ASTWalker
-  File "/home/alex/.local/share/virtualenvs/SentimentAnalysis-CHIzAvV2/lib/python3.8/site-packages/pylint/utils/ast_walker.py", line 7, in <module>
-    from astroid import nodes
-  File "/home/alex/.local/share/virtualenvs/SentimentAnalysis-CHIzAvV2/lib/python3.8/site-packages/astroid/__init__.py", line 51, in <module>
-    from astroid.nodes import node_classes, scoped_nodes
-  File "/home/alex/.local/share/virtualenvs/SentimentAnalysis-CHIzAvV2/lib/python3.8/site-packages/astroid/nodes/__init__.py", line 27, in <module>
-    from astroid.nodes.node_classes import (  # pylint: disable=redefined-builtin (Ellipsis)
-  File "/home/alex/.local/share/virtualenvs/SentimentAnalysis-CHIzAvV2/lib/python3.8/site-packages/astroid/nodes/node_classes.py", line 47, in <module>
-    from astroid import decorators, mixins, util
-  File "/home/alex/.local/share/virtualenvs/SentimentAnalysis-CHIzAvV2/lib/python3.8/site-packages/astroid/decorators.py", line 36, in <module>
-    from typing_extensions import ParamSpec
-ImportError: cannot import name 'ParamSpec' from 'typing_extensions' (/home/alex/.local/share/virtualenvs/SentimentAnalysis-CHIzAvV2/lib/python3.8/site-packages/typing_extensions.py)
-': invalid character 'T' looking for beginning of value
-
 

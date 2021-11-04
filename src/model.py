@@ -1,7 +1,6 @@
 """ Machine Learning model to predict SA"""
 import pickle
 import re
-import typing
 
 import nltk
 import numpy as np
@@ -132,7 +131,7 @@ def decode_prediction(pred: float) -> str:
     return label
 
 
-def predict(text: str) -> typing.Dict:
+def predict(text: str) -> dict:
     """Predict the text based on the model"""
 
     x_test = pad_sequences(tokenizer.texts_to_sequences([text]), maxlen=30)

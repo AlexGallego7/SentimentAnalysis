@@ -1,6 +1,6 @@
 import sys
 
-sys.path.insert(1, '/home/alex/Desktop/SentimentAnalysis/src')
+sys.path.insert(1, "/home/alex/Desktop/SentimentAnalysis/src")
 
 from predict import predict
 

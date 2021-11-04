@@ -2,7 +2,6 @@
 
 import pickle
 import re
-import typing
 
 import pandas as pd
 from keras.models import load_model
@@ -56,7 +55,7 @@ def decode_prediction(pred: float) -> str:
 tokenizer = pickle.load(open("data/features/tokenizer.pkl", "rb"))
 
 
-def predict(text: str) -> typing.Dict:
+def predict(text: str) -> dict:
     """Predict the text with model"""
 
     x_text = pad_sequences(tokenizer.texts_to_sequences([text]), maxlen=30)
