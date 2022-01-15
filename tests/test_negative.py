@@ -1,11 +1,6 @@
 """ Test Negative Module """
 
-import sys
-
 from predict import predict
-
-sys.path.insert(1, "/home/alex/Desktop/SentimentAnalysis/src")
-
 
 def test_is_negative():
     """ Test negative prediction"""

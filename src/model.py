@@ -41,8 +41,7 @@ def decode_target(target: int) -> str:
 
     return DECODE_MAP[int(target)]
 
-
-DF.target = DF.target.apply(lambda x: decode_target(x))
+DF.target = DF.target.apply(decode_target)
 
 TARGET_CNT = Counter(DF.target)
 
@@ -72,7 +71,7 @@ def preprocess_text(text: str, stem: bool = False) -> str:
     return " ".join(tokens)
 
 
-DF.text = DF.text.apply(lambda x: preprocess_text(x))
+DF.text = DF.text.apply(preprocess_text)
 
 TRAIN_DATA, TEST_DATA = train_test_split(DF, test_size=0.2)
 

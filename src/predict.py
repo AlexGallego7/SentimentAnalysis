@@ -38,7 +38,7 @@ def preprocess_text(text: str, stem: bool = True) -> str:
     return " ".join(tokens)
 
 
-DF.text = DF.text.apply(lambda x: preprocess_text(x))
+DF.text = DF.text.apply(preprocess_text)
 
 
 def decode_prediction(pred: float) -> str:
