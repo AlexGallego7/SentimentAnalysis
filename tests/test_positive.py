@@ -1,8 +1,10 @@
+"""Test Positive Module"""
+
 import sys
 
-sys.path.insert(1, "/home/alex/Desktop/SentimentAnalysis/src")
-
 from predict import predict
+
+sys.path.insert(1, "/home/alex/Desktop/SentimentAnalysis/src")
 
 
 def test_is_positive():

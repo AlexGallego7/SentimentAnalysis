@@ -9,17 +9,17 @@ from keras.preprocessing.sequence import pad_sequences
 from matplotlib import pyplot as plt
 from nltk.stem import SnowballStemmer
 
-model = load_model("model.h5")
+#MODEL = load_model("saved_model.pb")
 
-df = pd.read_csv(
+DF = pd.read_csv(
     "data/tweets.csv",
     encoding="ISO-8859-1",
     names=["user", "text", "loc"],
     header=None,
 )
-df = df[["text"]]
+DF = DF[["text"]]
 
-stemmer = SnowballStemmer("english")
+STEMMER = SnowballStemmer("english")
 
 CLEANSE_RE = "@\r+|https?:\r+|http?:\r|[^A-Za-z0-9]+"
 
@@ -31,14 +31,14 @@ def preprocess_text(text: str, stem: bool = True) -> str:
     tokens = []
     for token in text.split():
         if stem:
-            tokens.append(stemmer.stem(token))
+            tokens.append(STEMMER.stem(token))
         else:
             tokens.append(token)
 
     return " ".join(tokens)
 
 
-df.text = df.text.apply(lambda x: preprocess_text(x))
+DF.text = DF.text.apply(lambda x: preprocess_text(x))
 
 
 def decode_prediction(pred: float) -> str:
@@ -52,25 +52,24 @@ def decode_prediction(pred: float) -> str:
     return label
 
 
-tokenizer = pickle.load(open("data/features/tokenizer.pkl", "rb"))
+TOKENIZER = pickle.load(open("data/features/tokenizer.pkl", "rb"))
+MODEL = pickle.load(open("Sentiment-LR.pickle", "rb"))
 
 
 def predict(text: str) -> dict:
     """Predict the text with model"""
 
-    x_text = pad_sequences(tokenizer.texts_to_sequences([text]), maxlen=30)
-    score = model.predict([x_text])[0]
+    x_text = pad_sequences(TOKENIZER.texts_to_sequences([preprocess_text(text)]), maxlen=30)
+    score = MODEL.predict([text])
     label = decode_prediction(score)
 
     return {"message": text, "label": label, "score": float(score)}
 
 
-piechart = {"POSITIVE": 0, "NEUTRAL": 0, "NEGATIVE": 0}
+PIECHART = {"POSITIVE": 0, "NEUTRAL": 0, "NEGATIVE": 0}
 
-for tweet in df.text.to_list():
-    res = predict(tweet)
-    piechart[res["label"]] += 1
+print(predict("HELLO"))
 
-fig = plt.figure(figsize=(10, 7))
-plt.pie(piechart.values(), labels=piechart.keys())
+FIG = plt.figure(figsize=(10, 7))
+plt.pie(PIECHART.values(), labels=PIECHART.keys())
 plt.savefig("pie.png")

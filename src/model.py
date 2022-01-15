@@ -15,6 +15,13 @@ from nltk.corpus import stopwords
 from nltk.stem import SnowballStemmer
 from sklearn.model_selection import train_test_split
 from sklearn.preprocessing import LabelEncoder
+from sklearn.metrics import confusion_matrix, classification_report, accuracy_score
+
+import matplotlib.pyplot as plt
+import itertools
+from collections import Counter
+
+
 
 nltk.download("stopwords")
 
@@ -36,6 +43,13 @@ def decode_target(target: int) -> str:
 
 
 df.target = df.target.apply(lambda x: decode_target(x))
+
+target_cnt = Counter(df.target)
+
+plt.figure(figsize=(16,8))
+plt.bar(target_cnt.keys(), target_cnt.values())
+plt.title("Dataset labels distribution")
+plt.savefig("distribution.png")
 
 stop_words = stopwords.words("english")
 stemmer = SnowballStemmer("english")
@@ -74,7 +88,7 @@ encoder = LabelEncoder()
 encoder.fit(train_data.target.to_list())
 
 Y_train = encoder.transform(train_data.target.to_list()).reshape(-1, 1)
-Y_test = encoder.transform(test_data.target.mllst()).reshape(-1, 1)
+Y_test = encoder.transform(test_data.target.to_list()).reshape(-1, 1)
 
 documents = [_text.split() for _text in train_data.text]
 word_model = Word2Vec(vector_size=300, window=7, min_count=10, workers=8)
@@ -105,7 +119,7 @@ reduce_lr = ReduceLROnPlateau(
 )
 early_stop = EarlyStopping(monitor="val_loss", min_delta=0, patience=10, mode="auto")
 
-HISTORY = model.fit(
+history = model.fit(
     X_train,
     Y_train,
     batch_size=1024,
@@ -114,8 +128,33 @@ HISTORY = model.fit(
     callbacks=[reduce_lr, early_stop],
 )
 
+
+acc = history.history['accuracy']
+val_acc = history.history['val_accuracy']
+loss = history.history['loss']
+val_loss = history.history['val_loss']
+ 
+epochs = range(len(acc))
+ 
+plt.plot(epochs, acc, 'b', label='Training acc')
+plt.plot(epochs, val_acc, 'r', label='Validation acc')
+plt.title('Training and validation accuracy')
+plt.legend()
+
+plt.savefig('training_acc.png')
+ 
+plt.figure()
+ 
+plt.plot(epochs, loss, 'b', label='Training loss')
+plt.plot(epochs, val_loss, 'r', label='Validation loss')
+plt.title('Training and validation loss')
+plt.legend()
+ 
+
+plt.savefig('training_loss.png')
+
 score = model.evaluate(X_test, Y_test, batch_size=1024)
-print()
+print(score)
 print("ACCURACY:", score[1])
 print("LOSS:", score[0])
 
@@ -140,6 +179,46 @@ def predict(text: str) -> dict:
 
     return {"label": label, "score": float(score)}
 
+y_pred_1d = []
+y_test_1d = list(test_data.target)
+
+def plot_confusion_matrix(cm, classes,
+                          title='Confusion matrix',
+                          cmap=plt.cm.Blues):
+    """
+    This function prints and plots the confusion matrix.
+    Normalization can be applied by setting `normalize=True`.
+    """
+
+    cm = cm.astype('float') / cm.sum(axis=1)[:, np.newaxis]
+
+    plt.imshow(cm, interpolation='nearest', cmap=cmap)
+    plt.title(title, fontsize=30)
+    plt.colorbar()
+    tick_marks = np.arange(len(classes))
+    plt.xticks(tick_marks, classes, rotation=90, fontsize=22)
+    plt.yticks(tick_marks, classes, fontsize=22)
+
+    fmt = '.2f'
+    thresh = cm.max() / 2.
+    for i, j in itertools.product(range(cm.shape[0]), range(cm.shape[1])):
+        plt.text(j, i, format(cm[i, j], fmt),
+                 horizontalalignment="center",
+                 color="white" if cm[i, j] > thresh else "black")
+
+    plt.ylabel('True label', fontsize=25)
+    plt.xlabel('Predicted label', fontsize=25)
+
+cnf_matrix = confusion_matrix(y_test_1d, y_pred_1d)
+plt.figure(figsize=(12,12))
+plot_confusion_matrix(cnf_matrix, classes=train_data.target.unique(), title="Confusion matrix")
+plt.savefig('cnf_matrix.png')
+
+scores = model.predict(X_test, verbose=1, batch_size=8000)
+y_pred_1d = [decode_prediction(score, include_neutral=False) for score in scores]
+
+print(classification_report(y_test_1d, y_pred_1d))
+accuracy_score(y_test_1d, y_pred_1d)
 
 scores = model.predict(X_test, verbose=1, batch_size=10000)
 Y_pred = [decode_prediction(score) for score in scores]
