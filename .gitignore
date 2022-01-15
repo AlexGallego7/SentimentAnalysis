@@ -1,6 +1,6 @@
 /.mypy_cache
 /.pytest_cache
 
-/data
+/data/train.csv
 
 model.h5

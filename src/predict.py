@@ -9,7 +9,7 @@ from keras.preprocessing.sequence import pad_sequences
 from matplotlib import pyplot as plt
 from nltk.stem import SnowballStemmer
 
-#MODEL = load_model("saved_model.pb")
+MODEL = load_model("saved_model.pb")
 
 DF = pd.read_csv(
     "data/tweets.csv",
@@ -60,7 +60,7 @@ def predict(text: str) -> dict:
     """Predict the text with model"""
 
     x_text = pad_sequences(TOKENIZER.texts_to_sequences([preprocess_text(text)]), maxlen=30)
-    score = MODEL.predict([text])
+    score = MODEL.predict([x_text])
     label = decode_prediction(score)
 
     return {"message": text, "label": label, "score": float(score)}

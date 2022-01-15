@@ -1,6 +1,8 @@
 """ Machine Learning model to predict SA"""
 import pickle
 import re
+import itertools
+from collections import Counter
 
 import nltk
 import numpy as np
@@ -18,41 +20,39 @@ from sklearn.preprocessing import LabelEncoder
 from sklearn.metrics import confusion_matrix, classification_report, accuracy_score
 
 import matplotlib.pyplot as plt
-import itertools
-from collections import Counter
 
 
 
 nltk.download("stopwords")
 
-df = pd.read_csv(
+DF = pd.read_csv(
     "data/train.csv",
     encoding="ISO-8859-1",
     names=["target", "id", "date", "flag", "user", "text"],
     header=None,
 )
-df = df[["target", "text"]]
+DF = DF[["target", "text"]]
 
-decode_map = {0: "NEGATIVE", 2: "NEUTRAL", 4: "POSITIVE"}
+DECODE_MAP = {0: "NEGATIVE", 2: "NEUTRAL", 4: "POSITIVE"}
 
 
 def decode_target(target: int) -> str:
     """Uses decode map to decode the actual dataset into labels"""
 
-    return decode_map[int(target)]
+    return DECODE_MAP[int(target)]
 
 
-df.target = df.target.apply(lambda x: decode_target(x))
+DF.target = DF.target.apply(lambda x: decode_target(x))
 
-target_cnt = Counter(df.target)
+TARGET_CNT = Counter(DF.target)
 
-plt.figure(figsize=(16,8))
-plt.bar(target_cnt.keys(), target_cnt.values())
+plt.figure(figsize=(16, 8))
+plt.bar(TARGET_CNT.keys(), TARGET_CNT.values())
 plt.title("Dataset labels distribution")
 plt.savefig("distribution.png")
 
-stop_words = stopwords.words("english")
-stemmer = SnowballStemmer("english")
+STOP_WORDS = stopwords.words("english")
+STEMMER = SnowballStemmer("english")
 
 CLEANSE_RE = "@\r+|https?:\r+|http?:\r|[^A-Za-z0-9]+"
 
@@ -63,100 +63,98 @@ def preprocess_text(text: str, stem: bool = False) -> str:
     text = re.sub(CLEANSE_RE, " ", str(text).lower()).strip()
     tokens = []
     for token in text.split():
-        if token not in stop_words:
+        if token not in STOP_WORDS:
             if stem:
-                tokens.append(stemmer.stem(token))
+                tokens.append(STEMMER.stem(token))
             else:
                 tokens.append(token)
 
     return " ".join(tokens)
 
 
-df.text = df.text.apply(lambda x: preprocess_text(x))
+DF.text = DF.text.apply(lambda x: preprocess_text(x))
 
-train_data, test_data = train_test_split(df, test_size=0.2)
+TRAIN_DATA, TEST_DATA = train_test_split(DF, test_size=0.2)
 
-tokenizer = Tokenizer()
-tokenizer.fit_on_texts(train_data.text)
-word_index = tokenizer.word_index
-vocab_size = len(tokenizer.word_index) + 1
+TOKENIZER = Tokenizer()
+TOKENIZER.fit_on_texts(TRAIN_DATA.text)
+WORD_INDEX = TOKENIZER.word_index
+VOCAB_SIZE = len(TOKENIZER.word_index) + 1
 
-X_train = pad_sequences(tokenizer.texts_to_sequences(train_data.text), maxlen=30)
-X_test = pad_sequences(tokenizer.texts_to_sequences(test_data.text), maxlen=30)
+X_TRAIN = pad_sequences(TOKENIZER.texts_to_sequences(TRAIN_DATA.text), maxlen=30)
+X_TEST = pad_sequences(TOKENIZER.texts_to_sequences(TEST_DATA.text), maxlen=30)
 
-encoder = LabelEncoder()
-encoder.fit(train_data.target.to_list())
+ENCODER = LabelEncoder()
+ENCODER.fit(TRAIN_DATA.target.to_list())
 
-Y_train = encoder.transform(train_data.target.to_list()).reshape(-1, 1)
-Y_test = encoder.transform(test_data.target.to_list()).reshape(-1, 1)
+Y_TRAIN = ENCODER.transform(TRAIN_DATA.target.to_list()).reshape(-1, 1)
+Y_TEST = ENCODER.transform(TEST_DATA.target.to_list()).reshape(-1, 1)
 
-documents = [_text.split() for _text in train_data.text]
-word_model = Word2Vec(vector_size=300, window=7, min_count=10, workers=8)
+DOCUMENTS = [_text.split() for _text in TRAIN_DATA.text]
+WORD_MODEL = Word2Vec(vector_size=300, window=7, min_count=10, workers=8)
 
-word_model.build_vocab(documents)
-word_model.train(documents, total_examples=len(documents), epochs=32)
+WORD_MODEL.build_vocab(DOCUMENTS)
+WORD_MODEL.train(DOCUMENTS, total_examples=len(DOCUMENTS), epochs=32)
 
-embedding_matrix = np.zeros((vocab_size, 300))
-for word, i in word_index.items():
-    if word in word_model.wv:
-        embedding_matrix[i] = word_model.wv[word]
+EMBEDDING_MATRIX = np.zeros((VOCAB_SIZE, 300))
+for word, index in WORD_INDEX.items():
+    if word in WORD_MODEL.wv:
+        EMBEDDING_MATRIX[index] = WORD_MODEL.wv[word]
 
-embedding_layer = Embedding(
-    vocab_size, 300, weights=[embedding_matrix], input_length=30, trainable=False
+EMBEDDING_LAYER = Embedding(
+    VOCAB_SIZE, 300, weights=[EMBEDDING_MATRIX], input_length=30, trainable=False
 )
 
-model = Sequential()
-model.add(embedding_layer)
-model.add(Dropout(0.5))
-model.add(LSTM(100, dropout=0.2, recurrent_dropout=0.2))
-model.add(Dense(1, activation="sigmoid"))
-model.summary()
+MODEL = Sequential()
+MODEL.add(EMBEDDING_LAYER)
+MODEL.add(Dropout(0.5))
+MODEL.add(LSTM(100, dropout=0.2, recurrent_dropout=0.2))
+MODEL.add(Dense(1, activation="sigmoid"))
+MODEL.summary()
 
-model.compile(loss="binary_crossentropy", optimizer="adam", metrics=["accuracy"])
+MODEL.compile(loss="binary_crossentropy", optimizer="adam", metrics=["accuracy"])
 
-reduce_lr = ReduceLROnPlateau(
+REDUCE_LR = ReduceLROnPlateau(
     monitor="val_loss", factor=0.1, patience=5, min_lr=1e-6, verbose=1
 )
-early_stop = EarlyStopping(monitor="val_loss", min_delta=0, patience=10, mode="auto")
+EARLY_STOP = EarlyStopping(monitor="val_loss", min_delta=0, patience=10, mode="auto")
 
-history = model.fit(
-    X_train,
-    Y_train,
+HISTORY = MODEL.fit(
+    X_TRAIN,
+    Y_TRAIN,
     batch_size=1024,
     epochs=8,
-    validation_data=(X_test, Y_test),
-    callbacks=[reduce_lr, early_stop],
+    validation_data=(X_TEST, Y_TEST),
+    callbacks=[REDUCE_LR, EARLY_STOP],
 )
 
 
-acc = history.history['accuracy']
-val_acc = history.history['val_accuracy']
-loss = history.history['loss']
-val_loss = history.history['val_loss']
- 
-epochs = range(len(acc))
- 
-plt.plot(epochs, acc, 'b', label='Training acc')
-plt.plot(epochs, val_acc, 'r', label='Validation acc')
+ACC = HISTORY.history['accuracy']
+VAL_ACC = HISTORY.history['val_accuracy']
+LOSS = HISTORY.history['loss']
+VAL_LOSS = HISTORY.history['val_loss']
+EPOCHS = range(len(ACC))
+
+plt.plot(EPOCHS, ACC, 'b', label='Training acc')
+plt.plot(EPOCHS, VAL_ACC, 'r', label='Validation acc')
 plt.title('Training and validation accuracy')
 plt.legend()
 
 plt.savefig('training_acc.png')
- 
+
 plt.figure()
- 
-plt.plot(epochs, loss, 'b', label='Training loss')
-plt.plot(epochs, val_loss, 'r', label='Validation loss')
+
+plt.plot(EPOCHS, LOSS, 'b', label='Training loss')
+plt.plot(EPOCHS, VAL_LOSS, 'r', label='Validation loss')
 plt.title('Training and validation loss')
 plt.legend()
- 
 
 plt.savefig('training_loss.png')
 
-score = model.evaluate(X_test, Y_test, batch_size=1024)
-print(score)
-print("ACCURACY:", score[1])
-print("LOSS:", score[0])
+SCORE = MODEL.evaluate(X_TEST, Y_TEST, batch_size=1024)
+print(SCORE)
+print("ACCURACY:", SCORE[1])
+print("LOSS:", SCORE[0])
 
 
 def decode_prediction(pred: float) -> str:
@@ -173,26 +171,25 @@ def decode_prediction(pred: float) -> str:
 def predict(text: str) -> dict:
     """Predict the text based on the model"""
 
-    x_test = pad_sequences(tokenizer.texts_to_sequences([text]), maxlen=30)
-    score_pred = model.predict([x_test])[0]
+    x_test = pad_sequences(TOKENIZER.texts_to_sequences([text]), maxlen=30)
+    score_pred = MODEL.predict([x_test])[0]
     label = decode_prediction(score_pred)
 
-    return {"label": label, "score": float(score)}
+    return {"label": label, "score": float(SCORE)}
 
-y_pred_1d = []
-y_test_1d = list(test_data.target)
+Y_PRED_1D = []
+Y_TEST_1D = list(TEST_DATA.target)
 
-def plot_confusion_matrix(cm, classes,
-                          title='Confusion matrix',
-                          cmap=plt.cm.Blues):
+def plot_confusion_matrix(conf_matrix, classes,
+                          title='Confusion matrix'):
     """
     This function prints and plots the confusion matrix.
     Normalization can be applied by setting `normalize=True`.
     """
 
-    cm = cm.astype('float') / cm.sum(axis=1)[:, np.newaxis]
+    conf_matrix = conf_matrix.astype('float') / conf_matrix.sum(axis=1)[:, np.newaxis]
 
-    plt.imshow(cm, interpolation='nearest', cmap=cmap)
+    plt.imshow(conf_matrix, interpolation='nearest')
     plt.title(title, fontsize=30)
     plt.colorbar()
     tick_marks = np.arange(len(classes))
@@ -200,30 +197,30 @@ def plot_confusion_matrix(cm, classes,
     plt.yticks(tick_marks, classes, fontsize=22)
 
     fmt = '.2f'
-    thresh = cm.max() / 2.
-    for i, j in itertools.product(range(cm.shape[0]), range(cm.shape[1])):
-        plt.text(j, i, format(cm[i, j], fmt),
+    thresh = conf_matrix.max() / 2.
+    for i, j in itertools.product(range(conf_matrix.shape[0]), range(conf_matrix.shape[1])):
+        plt.text(j, i, format(conf_matrix[i, j], fmt),
                  horizontalalignment="center",
-                 color="white" if cm[i, j] > thresh else "black")
+                 color="white" if conf_matrix[i, j] > thresh else "black")
 
     plt.ylabel('True label', fontsize=25)
     plt.xlabel('Predicted label', fontsize=25)
 
-cnf_matrix = confusion_matrix(y_test_1d, y_pred_1d)
-plt.figure(figsize=(12,12))
-plot_confusion_matrix(cnf_matrix, classes=train_data.target.unique(), title="Confusion matrix")
+CNF_MATRIX = confusion_matrix(Y_TEST_1D, Y_PRED_1D)
+plt.figure(figsize=(12, 12))
+plot_confusion_matrix(CNF_MATRIX, classes=TRAIN_DATA.target.unique(), title="Confusion matrix")
 plt.savefig('cnf_matrix.png')
 
-scores = model.predict(X_test, verbose=1, batch_size=8000)
-y_pred_1d = [decode_prediction(score, include_neutral=False) for score in scores]
+SCORES = MODEL.predict(X_TEST, verbose=1, batch_size=8000)
+Y_PRED_1D = [decode_prediction(score) for score in SCORES]
 
-print(classification_report(y_test_1d, y_pred_1d))
-accuracy_score(y_test_1d, y_pred_1d)
+print(classification_report(Y_TEST_1D, Y_PRED_1D))
+accuracy_score(Y_TEST_1D, Y_PRED_1D)
 
-scores = model.predict(X_test, verbose=1, batch_size=10000)
-Y_pred = [decode_prediction(score) for score in scores]
+SCORES = MODEL.predict(X_TEST, verbose=1, batch_size=10000)
+Y_PRED = [decode_prediction(score) for score in SCORES]
 
-model.save("model.h5")
-word_model.save("data/model.w2v")
-pickle.dump(tokenizer, open("data/features/tokenizer.pkl", "wb"), protocol=0)
-pickle.dump(encoder, open("data/features/encoder.pkl", "wb"), protocol=0)
+MODEL.save("model.h5")
+WORD_MODEL.save("data/model.w2v")
+pickle.dump(TOKENIZER, open("data/features/tokenizer.pkl", "wb"), protocol=0)
+pickle.dump(ENCODER, open("data/features/encoder.pkl", "wb"), protocol=0)
